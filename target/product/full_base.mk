@@ -21,7 +21,6 @@
 
 PRODUCT_PACKAGES := \
     libfwdlockengine \
-    VideoEditor \
     WAPPushManager
 
 PRODUCT_PACKAGES += \
