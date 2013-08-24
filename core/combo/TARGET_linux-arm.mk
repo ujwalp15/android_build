@@ -70,16 +70,22 @@ TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
 ifeq ($(TARGET_USE_O3),true)
 TARGET_arm_CFLAGS :=    -O3 \
+                        -fno-tree-vectorize \
+                        -fno-inline-functions \
                         -fomit-frame-pointer \
-                        -fstrict-aliasing    \
-                        -funswitch-loops
+                        -fstrict-aliasing \
+                        -Wstrict-aliasing=3 \
+                        -Werror=strict-aliasing
 else
 TARGET_arm_CFLAGS :=    -Os \
                         -fomit-frame-pointer \
                         -fstrict-aliasing    \
+                        -Wstrict-aliasing=3 \
+                        -Werror=strict-aliasing \
                         -fno-zero-initialized-in-bss \
                         -funswitch-loops \
                         -fno-tree-vectorize \
+                        -funsafe-loop-optimizations \
                         -Wno-unused-parameter \
                         -Wno-unused-value \
                         -Wno-unused-function
@@ -90,12 +96,13 @@ ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
 ifeq ($(TARGET_USE_O3),true)
     TARGET_thumb_CFLAGS :=  -mthumb \
                             -O3 \
-                            -fomit-frame-pointer \
-                            -fno-strict-aliasing \
-                            -Wstrict-aliasing=2 \
-                            -Werror=strict-aliasing \
                             -fno-tree-vectorize \
-                            -funsafe-math-optimizations \
+                            -fno-inline-functions \
+                            -fno-unswitch-loops \
+                            -fomit-frame-pointer \
+                            -fstrict-aliasing \
+                            -Wstrict-aliasing=3 \
+                            -Werror=strict-aliasing \
                             -Wno-unused-parameter \
                             -Wno-unused-value \
                             -Wno-unused-function
@@ -103,7 +110,10 @@ else
     TARGET_thumb_CFLAGS :=  -mthumb \
                             -Os \
                             -fomit-frame-pointer \
-                            -fno-strict-aliasing
+                            -fstrict-aliasing \
+                            -Wstrict-aliasing=3 \
+                            -Werror=strict-aliasing \
+                            -Wno-unused-parameter
 endif
 else
 TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
