@@ -34,13 +34,13 @@ except:
     device = product
 
 if not depsonly:
-    print "Device %s not found. Attempting to retrieve device repository from SlimRoms Github (http://github.com/SlimRoms)." % device
+    print "Device %s not found. Attempting to retrieve device repository from SlimSaber Github (http://github.com/SlimSaber)." % device
 
 repositories = []
 
 page = 1
 while not depsonly:
-    result = json.loads(urllib2.urlopen("https://api.github.com/users/SlimRoms/repos?page=%d" % page).read())
+    result = json.loads(urllib2.urlopen("https://api.github.com/users/SlimSaber/repos?page=%d" % page).read())
     if len(result) == 0:
         break
     for res in result:
@@ -173,9 +173,9 @@ def add_to_manifest(repositories):
                 existing_project.set('revision', repository['branch'])
             continue
 
-        print 'Adding dependency: SlimRoms/%s -> %s' % (repo_name, repo_target)
+        print 'Adding dependency: SlimSaber/%s -> %s' % (repo_name, repo_target)
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "SlimRoms/%s" % repo_name, "revision": "lp5.0" })
+            "remote": "github", "name": "SlimSaber/%s" % repo_name, "revision": "lp5.0" })
 
         if 'branch' in repository:
             project.set('revision', repository['branch'])
