@@ -118,7 +118,7 @@ kernel_modules = "%s/system/lib/modules" % zip_dir
 for root, dirs, files in walk(kernel_modules):
     for file in files:
         fn = path.join(root, file)
-	call(['arm-eabi-strip', '--strip-unneeded', fn])
+        call(['arm-eabi-strip', '--strip-unneeded', fn])
 
 # zip package
 with ZipFile("%s.zip" % zip_dir, "w") as zipper:
