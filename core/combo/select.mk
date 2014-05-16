@@ -105,7 +105,7 @@ ifneq ($(USE_CCACHE),)
   # fine; ensures these paths are relative for all Android trees
   # on a workstation.
   ifeq ($(CCACHE_BASEDIR),)
-    export CCACHE_BASEDIR := /
+    export CCACHE_BASEDIR := $(ANDROID_BUILD_TOP)
   endif
 
   # Workaround for ccache with clang.
