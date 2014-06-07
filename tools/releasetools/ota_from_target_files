@@ -482,6 +482,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
 #  recovery_img = common.GetBootableImage("recovery.img", "recovery.img",
 #                                         OPTIONS.input_tmp, "RECOVERY")
+
   if OPTIONS.two_step:
     if not OPTIONS.info_dict.get("multistage_support", None):
       assert False, "two-step packages not supported by this build"
@@ -535,6 +536,7 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
 
   boot_img = common.GetBootableImage("boot.img", "boot.img",
                                      OPTIONS.input_tmp, "BOOT")
+
   #recovery_img = common.GetBootableImage("recovery.img", "recovery.img",
   #                                       OPTIONS.input_tmp, "RECOVERY")
   #MakeRecoveryPatch(OPTIONS.input_tmp, output_zip, recovery_img, boot_img)
@@ -1037,7 +1039,7 @@ def main(argv):
                                               "worker_threads=",
                                               "aslr_mode=",
                                               "backup=",
-                                              "override_prop="],
+                                              "override_prop=",
                                               "two_step",
                                               ],
                              extra_option_handler=option_handler)
