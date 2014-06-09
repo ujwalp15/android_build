@@ -1665,10 +1665,11 @@ ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
 endif
 
 bootzip: bootimage
-	$(BOOT_ZIP_FROM_IMAGE_SCRIPT) \
+	   $(BOOT_ZIP_FROM_IMAGE_SCRIPT) \
 	   $(recovery_fstab) \
 	   $(OUT) \
-	   $(TARGET_DEVICE)
+	   $(TARGET_DEVICE) \
+	   $(BOOT_ZIP_OUT_FILE)
 
 endif    # recovery_fstab is defined
 endif    # TARGET_NO_KERNEL != true
