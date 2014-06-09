@@ -1367,7 +1367,6 @@ endif
 
 BOOT_ZIP_FROM_IMAGE_SCRIPT := ./build/tools/releasetools/boot_flash_from_image
 KERNEL_PATH := $(TARGET_KERNEL_SOURCE)/arch/arm/configs/$(TARGET_KERNEL_CONFIG)
-#BOOT_ZIP_OUT_FILE := Slim-Kernel-$(DEVICE).zip
 
 ifneq ($(SLIM_BUILD),)
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
@@ -1387,10 +1386,11 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 .PHONY: otapackage bacon bootzip
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
 bootzip: bootimage
-	$(BOOT_ZIP_FROM_IMAGE_SCRIPT) \
+	   $(BOOT_ZIP_FROM_IMAGE_SCRIPT) \
 	   $(recovery_fstab) \
 	   $(OUT) \
-	   $(TARGET_DEVICE)
+	   $(TARGET_DEVICE) \
+	   $(BOOT_ZIP_OUT_FILE)
 
 bacon: otapackage
 ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
