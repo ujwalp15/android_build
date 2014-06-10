@@ -482,7 +482,6 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
 #  recovery_img = common.GetBootableImage("recovery.img", "recovery.img",
 #                                         OPTIONS.input_tmp, "RECOVERY")
-
   if OPTIONS.two_step:
     if not OPTIONS.info_dict.get("multistage_support", None):
       assert False, "two-step packages not supported by this build"
