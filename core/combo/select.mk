@@ -46,15 +46,33 @@ $(combo_target)HAVE_STRLCPY := 0
 $(combo_target)HAVE_STRLCAT := 0
 $(combo_target)HAVE_KERNEL_MODULES := 0
 
-ifeq ($(TARGET_USE_O3),true)
+# Highly experimental, use with extreme caution.
+# -fgcse-las & -fpredictive-commoning = memory optimization flags, does not increase code size. gcse-las is not envoked by any -*O flags.
+# -fpredictive-commoning is enabled by default when using -O3. So if using -O3 there's no need to pass it twice.
+OPT_MEM := -fgcse-las
+ifneq ($(TARGET_USE_O3),true)
+OPT_MEM += -fpredictive-commoning
+endif
+
 $(combo_target)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
-$(combo_target)RELEASE_CFLAGS := -O3 -g -fno-strict-aliasing
-$(combo_target)GLOBAL_LDFLAGS := -Wl,-O3
+ifeq ($(TARGET_USE_03),true)
+$(combo_target)RELEASE_CFLAGS := -O3 -g -fno-tree-vectorize -fno-inline-functions -fno-unswitch-loops
+$(combo_target)GLOBAL_LDFLAGS :=
 else
-$(combo_target)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
-$(combo_target)RELEASE_CFLAGS := -Os -g -fno-strict-aliasing
+$(combo_target)RELEASE_CFLAGS := -Os -g
 $(combo_target)GLOBAL_LDFLAGS :=
 endif
+
+ifeq ($(strip $(STRICT_ALIASING)),true)
+$(combo_target)RELEASE_CFLAGS += -fstrict-aliasing -Wstrict-aliasing=3 -Werror=strict-aliasing
+else
+$(combo_target)RELEASE_CFLAGS += -fno-strict-aliasing
+endif
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+$(combo_target)RELEASE_CFLAGS += $(OPT_MEM)
+endif
+
 $(combo_target)GLOBAL_ARFLAGS := crsP
 
 $(combo_target)EXECUTABLE_SUFFIX :=

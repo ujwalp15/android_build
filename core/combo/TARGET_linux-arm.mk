@@ -40,6 +40,14 @@ else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+# Highly experimental, use with extreme caution.
+# -fgcse-las & -fpredictive-commoning = memory optimization flags, does not increase code size. gcse-las is not envoked by any -*O flags.
+# -fpredictive-commoning is enabled by default when using -O3. So if using -O3 there's no need to pass it twice.
+OPT_MEM := -fgcse-las
+ifneq ($(TARGET_USE_O3),true)
+OPT_MEM += -fpredictive-commoning
+endif
+
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_ARCH)/$(TARGET_ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_ARCH_VARIANT))
@@ -69,44 +77,63 @@ endif
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
 ifeq ($(TARGET_USE_O3),true)
-TARGET_arm_CFLAGS :=    -O3 \
-                        -fomit-frame-pointer \
-                        -fstrict-aliasing    \
-                        -funswitch-loops
+TARGET_arm_CFLAGS := -O3 \
+                     -fno-tree-vectorize \
+                     -fno-inline-functions \
+                     -fomit-frame-pointer
 else
-TARGET_arm_CFLAGS :=    -Os \
-                        -fomit-frame-pointer \
-                        -fstrict-aliasing    \
-                        -fno-zero-initialized-in-bss \
-                        -funswitch-loops \
-                        -fno-tree-vectorize \
-                        -Wno-unused-parameter \
-                        -Wno-unused-value \
-                        -Wno-unused-function
+TARGET_arm_CFLAGS := -Os \
+                     -fomit-frame-pointer \
+                     -fno-zero-initialized-in-bss \
+                     -funswitch-loops \
+                     -fno-tree-vectorize \
+                     -funsafe-loop-optimizations
+endif
+
+ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
+TARGET_arm_CFLAGS += -Wno-unused-parameter \
+                     -Wno-unused-value \
+                     -Wno-unused-function
+endif
+
+ifeq ($(strip $(STRICT_ALIASING)),true)
+TARGET_arm_CFLAGS += -fstrict-aliasing \
+                     -Wstrict-aliasing=3 \
+                     -Werror=strict-aliasing
+endif
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+TARGET_arm_CFLAGS += $(OPT_MEM)
 endif
 
 # Modules can choose to compile some source as thumb.
-ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
 ifeq ($(TARGET_USE_O3),true)
-    TARGET_thumb_CFLAGS :=  -mthumb \
-                            -O3 \
-                            -fomit-frame-pointer \
-                            -fno-strict-aliasing \
-                            -Wstrict-aliasing=2 \
-                            -Werror=strict-aliasing \
-                            -fno-tree-vectorize \
-                            -funsafe-math-optimizations \
-                            -Wno-unused-parameter \
-                            -Wno-unused-value \
-                            -Wno-unused-function
+    TARGET_thumb_CFLAGS := -mthumb \
+                           -O3 \
+                           -fno-tree-vectorize \
+                           -fno-inline-functions \
+                           -fno-unswitch-loops \
+                           -fomit-frame-pointer
 else
-    TARGET_thumb_CFLAGS :=  -mthumb \
-                            -Os \
-                            -fomit-frame-pointer \
-                            -fno-strict-aliasing
+    TARGET_thumb_CFLAGS := -mthumb \
+                           -Os \
+                           -fomit-frame-pointer
 endif
-else
-TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
+
+ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
+TARGET_thumb_CFLAGS +=     -Wno-unused-parameter \
+                           -Wno-unused-value \
+                           -Wno-unused-function
+endif
+
+ifeq ($(strip $(STRICT_ALIASING)),true)
+TARGET_thumb_CFLAGS +=     -fstrict-aliasing \
+                           -Wstrict-aliasing=3 \
+                           -Werror=strict-aliasing
+endif
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+TARGET_thumb_CFLAGS += $(OPT_MEM)
 endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
@@ -151,9 +178,19 @@ TARGET_GLOBAL_CFLAGS += $(TARGET_ANDROID_CONFIG_CFLAGS)
 # We cannot turn it off blindly since the option is not available
 # in gcc-4.4.x.  We also want to disable sincos optimization globally
 # by turning off the builtin sin function.
-ifneq ($(filter 4.6 4.6.% 4.7 4.7.%, $(TARGET_GCC_VERSION)),)
+ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.%, $(TARGET_GCC_VERSION)),)
 TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
+endif
+
+ifeq ($(strip $(STRICT_ALIASING)),true)
+TARGET_GLOBAL_CFLAGS += -fstrict-aliasing \
+                        -Wstrict-aliasing=3 \
+                        -Werror=strict-aliasing
+endif
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+TARGET_GLOBAL_CFLAGS += $(OPT_MEM)
 endif
 
 # This is to avoid the dreaded warning compiler message:
@@ -187,6 +224,10 @@ TARGET_RELEASE_CFLAGS := \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \
 			-frename-registers
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+TARGET_RELEASE_CFLAGS += $(OPT_MEM)
+endif
 
 libc_root := bionic/libc
 libm_root := bionic/libm
