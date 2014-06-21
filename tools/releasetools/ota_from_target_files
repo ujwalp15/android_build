@@ -503,17 +503,34 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
   device_specific.FullOTA_InstallBegin()
 
   if OPTIONS.backuptool:
+    script.Print("Running backup tool: Backup...")
     script.Mount("/system")
     script.RunBackup("backup")
     script.Unmount("/system")
 
   script.ShowProgress(0.5, 0)
-  script.Print("")
-  script.Print("")
-  script.Print("Slim Roms")
-  script.Print("")
-  script.Print(" www.slimroms.net  ")
-  script.Print("")
+
+  script.Print(" ");
+  script.Print(" ( ( ");
+  script.Print(" )\ ) ( )\ ) ) ");
+  script.Print("(()/( )\( ) (()/( ) ( /( ( ( ");
+  script.Print(" /(_)|(_)\ ( /(_))( /( )\()) ))\ )( ");
+  script.Print("(_)) _((_) )\ '(_)) )(_)|(_)\ /((_|()\ ");
+  script.Print("/ __|| |(_)_((_)) / __|((_)_| |(_)(_)) ((_) ");
+  script.Print("\__ \| || | ' \()\__ \/ _' | '_ \/ -_)| '_| ");
+  script.Print("|___/|_||_|_|_|_| |___/\__,_|_.__/\___||_| ");
+  script.Print(" ");
+
+  build = GetBuildProp("ro.build.date", OPTIONS.info_dict)
+  script.Print("******************************************");
+  script.Print("************ SLIMKAT SABERMOD ************");
+  script.Print("******************************************");
+  script.Print("* Compiled: %s"%(build));
+
+  device = GetBuildProp("ro.product.device", OPTIONS.info_dict)
+  model = GetBuildProp("ro.product.model", OPTIONS.info_dict)
+  script.Print("* Device: %s (%s)"%(model, device));
+  script.Print("******************************************");
 
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
@@ -522,8 +539,10 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
   script.Print("")
-  script.Print("Format and Mount System, Mount Data...")
+  script.Print("Formatting system partition...")
   script.FormatPartition("/system")
+
+  script.Print("Installing ROM...")
   script.Mount("/system")
   script.Mount("/data")
   script.UnpackPackageDir("system", "/system")
@@ -548,11 +567,12 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
   script.ShowProgress(0.2, 0)
 
   if OPTIONS.backuptool:
+    script.Print("Running backup tool: Restoring...")
     script.ShowProgress(0.2, 10)
     script.RunBackup("restore")
 
-  script.ShowProgress(0.2, 10)
   script.Print("Flashing Boot Image...")
+  script.ShowProgress(0.2, 10)
   script.WriteRawImage("/boot", "boot.img")
 
   script.ShowProgress(0.1, 0)
