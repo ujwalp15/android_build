@@ -419,26 +419,22 @@ def WriteFullOTAPackage(input_zip, output_zip):
   script.ShowProgress(0.5, 0)
 
   script.Print(" ");
-  script.Print(" ( ( ");
-  script.Print(" )\ ) ( )\ ) ) ");
-  script.Print("(()/( )\( ) (()/( ) ( /( ( ( ");
-  script.Print(" /(_)|(_)\ ( /(_))( /( )\()) ))\ )( ");
-  script.Print("(_)) _((_) )\ '(_)) )(_)|(_)\ /((_|()\ ");
-  script.Print("/ __|| |(_)_((_)) / __|((_)_| |(_)(_)) ((_) ");
-  script.Print("\__ \| || | ' \()\__ \/ _' | '_ \/ -_)| '_| ");
-  script.Print("|___/|_||_|_|_|_| |___/\__,_|_.__/\___||_| ");
+  script.Print(" (                 (                         ");
+  script.Print(" )\ ) (            )\ )         )            ");
+  script.Print("(()/( )\(     )   (()/(    ) ( /(    (  (    ");
+  script.Print(" /(_)|(_)\   (     /(_))( /( )\())  ))\ )(   ");
+  script.Print("(_))  _((_)  )\  '(_))  )(_)|(_)\  /((_|()\  ");
+  script.Print("/ __|| |(_)_((_)) / __|((_)_| |(_)(_))  ((_) ");
+  script.Print("\__ \| || | '  \()\__ \/ _' | '_ \/ -_)| '_| ");
+  script.Print("|___/|_||_|_|_|_| |___/\__,_|_.__/\___||_|   ");
   script.Print(" ");
 
   build = GetBuildProp("ro.build.date", OPTIONS.info_dict)
-  script.Print("******************************************");
-  script.Print("************ SLIMKAT SABERMOD ************");
-  script.Print("******************************************");
-  script.Print("* Compiled: %s"%(build));
+  script.Print("Compiled: %s"%(build));
 
   device = GetBuildProp("ro.product.device", OPTIONS.info_dict)
   model = GetBuildProp("ro.product.model", OPTIONS.info_dict)
-  script.Print("* Device: %s (%s)"%(model, device));
-  script.Print("******************************************");
+  script.Print("Device: %s (%s)"%(model, device));
 
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
