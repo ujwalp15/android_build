@@ -781,16 +781,18 @@ INSTALLED_RECOVERYIMAGE_TARGET :=
 RECOVERY_RESOURCE_ZIP :=
 endif
 
+RECOVERY_ZIP_FROM_IMAGE_SCRIPT := ./build/tools/releasetools/recovery_flash_from_image
+
 .PHONY: recoveryimage
 recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET) $(RECOVERY_RESOURCE_ZIP)
 
-INSTALLED_RECOVERYZIP_TARGET := $(PRODUCT_OUT)/utilities/update.zip
-$(INSTALLED_RECOVERYZIP_TARGET): $(INSTALLED_RECOVERYIMAGE_TARGET) $(TARGET_OUT)/bin/updater $(HOST_OUT_JAVA_LIBRARIES)/signapk.jar
-	@echo -e ${CL_CYN}"----- Making recovery zip -----"${CL_RST}
-	./build/tools/device/mkrecoveryzip.sh $(PRODUCT_OUT) $(HOST_OUT_JAVA_LIBRARIES)/signapk.jar
-
 .PHONY: recoveryzip
-recoveryzip: $(INSTALLED_RECOVERYZIP_TARGET)
+recoveryzip: recoveryimage
+	        $(RECOVERY_ZIP_FROM_IMAGE_SCRIPT) \
+	        $(recovery_fstab) \
+	        $(OUT) \
+	        $(TARGET_DEVICE) \
+	        $(RECOVERY_ZIP_OUT_FILE)
 
 ifneq ($(BOARD_NAND_PAGE_SIZE),)
 mkyaffs2_extra_flags := -c $(BOARD_NAND_PAGE_SIZE)
