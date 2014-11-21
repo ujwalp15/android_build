@@ -43,6 +43,14 @@ else
 $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+# Highly experimental, use with extreme caution.
+# -fgcse-las & -fpredictive-commoning = memory optimization flags, does not increase code size. gcse-las is not envoked by any -*O flags.
+# -fpredictive-commoning is enabled by default when using -O3. So if using -O3 there's no need to pass it twice.
+OPT_MEM := -fgcse-las
+ifneq ($(TARGET_USE_O3),true)
+OPT_MEM += -fpredictive-commoning
+endif
+
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_$(combo_2nd_arch_prefix)ARCH)/$(TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT))
@@ -84,6 +92,11 @@ $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -Os \
                         -Wno-unused-function
 endif
 
+ifeq ($(strip $(OPT_MEMORY)),true)
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS += $(OPT_MEM)
+endif
+
+
 # Modules can choose to compile some source as thumb.
 ifeq ($(TARGET_USE_O3),true)
 $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
@@ -102,6 +115,10 @@ $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
                         -Os \
                         -fomit-frame-pointer \
                         -fno-strict-aliasing
+endif
+
+ifeq ($(strip $(OPT_MEMORY)),true)
+$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS += $(OPT_MEM)
 endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
@@ -145,6 +162,10 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
 endif
 
+ifeq ($(strip $(OPT_MEMORY)),true)
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += $(OPT_MEM)
+endif
+
 # This is to avoid the dreaded warning compiler message:
 #   note: the mangling of 'va_list' has changed in GCC 4.4
 #
@@ -181,6 +202,9 @@ libc_root := bionic/libc
 libm_root := bionic/libm
 libstdc++_root := bionic/libstdc++
 
+ifeq ($(strip $(OPT_MEMORY)),true)
+$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS += $(OPT_MEM)
+endif
 
 ## on some hosts, the target cross-compiler is not available so do not run this command
 ifneq ($(wildcard $($(combo_2nd_arch_prefix)TARGET_CC)),)
