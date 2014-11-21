@@ -84,10 +84,7 @@ $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -Os \
                         -fomit-frame-pointer \
                         -fno-zero-initialized-in-bss \
                         -funswitch-loops \
-                        -fno-tree-vectorize \
-                        -Wno-unused-parameter \
-                        -Wno-unused-value \
-                        -Wno-unused-function
+                        -fno-tree-vectorize
 endif
 
 ifeq ($(strip $(OPT_MEMORY)),true)
@@ -100,16 +97,19 @@ $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS +=    -fstrict-aliasing \
                         -Werror=strict-aliasing
 endif
 
+ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS +=    -Wno-unused-parameter \
+                        -Wno-unused-value \
+                        -Wno-unused-function
+endif
+
 # Modules can choose to compile some source as thumb.
 ifeq ($(TARGET_USE_O3),true)
 $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
                         -O3 \
                         -fomit-frame-pointer \
                         -fno-tree-vectorize \
-                        -funsafe-math-optimizations \
-                        -Wno-unused-parameter \
-                        -Wno-unused-value \
-                        -Wno-unused-function
+                        -funsafe-math-optimizations
 else
 $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
                         -Os \
@@ -124,6 +124,12 @@ ifeq ($(strip $(STRICT_ALIASING)),true)
 $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS +=    -fstrict-aliasing \
                           -Wstrict-aliasing=3 \
                           -Werror=strict-aliasing
+endif
+
+ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
+$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS += -Wno-unused-parameter \
+                       -Wno-unused-value \
+                       -Wno-unused-function
 endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
