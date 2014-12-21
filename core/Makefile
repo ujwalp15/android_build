@@ -1628,7 +1628,7 @@ ifneq ($(SLIM_BUILD),)
 SLIM_TARGET_PACKAGE := $(PRODUCT_OUT)/$(SLIM_MOD_VERSION).zip
 endif
 
-ifneq ($(BLOCK_BASED_OTA),false)
+ifeq ($(BLOCK_BASED_OTA),true)
     $(INTERNAL_OTA_PACKAGE_TARGET): block_based := --block
 endif
 
