@@ -577,6 +577,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   device_specific.FullOTA_InstallBegin()
 
   if OPTIONS.backuptool:
+    script.Print("Backup...");
     script.Mount("/system")
     script.RunBackup("backup")
     script.Unmount("/system")
@@ -627,14 +628,12 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     system_diff.WriteScript(script, output_zip)
   else:
     script.Print("")
-    script.Print("Format and Mount System, Mount Data...")
-    script.script.append('unmount("/system");')
-    script.script.append('unmount("/data");')
+    script.Print("Formatting system partition...")
     script.FormatPartition("/system")
     script.Mount("/system", recovery_mount_options)
-    script.Mount("/data")
     if not has_recovery_patch:
       script.UnpackPackageDir("recovery", "/system")
+    script.Print("Installing ROM, please wait...")
     script.UnpackPackageDir("system", "/system")
 
     script.Print("Symlinks and permissions...")
@@ -679,6 +678,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
 
   if OPTIONS.backuptool:
+    script.Print("Restoring...");
     script.ShowProgress(0.2, 10)
     script.RunBackup("restore")
 
