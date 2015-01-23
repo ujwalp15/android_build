@@ -76,8 +76,6 @@ endif
 
 ifeq ($(strip $(STRICT_ALIASING)),true)
 $(combo_var_prefix)RELEASE_CFLAGS += -fstrict-aliasing -Wstrict-aliasing=3 -Werror=strict-aliasing
-else
-$(combo_var_prefix)RELEASE_CFLAGS += -fno-strict-aliasing
 endif
 
 $(combo_var_prefix)EXECUTABLE_SUFFIX :=

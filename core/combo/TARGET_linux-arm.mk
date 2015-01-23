@@ -80,11 +80,9 @@ $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -O3 \
                         -fomit-frame-pointer \
                         -funswitch-loops
 else
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -Os \
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -O2 \
                         -fomit-frame-pointer \
-                        -fno-zero-initialized-in-bss \
-                        -funswitch-loops \
-                        -fno-tree-vectorize
+                        -funswitch-loops
 endif
 
 ifeq ($(strip $(OPT_MEMORY)),true)
@@ -142,7 +140,7 @@ endif
 # with -mlong-calls.  When built at -O0, those libraries are
 # too big for a thumb "BL <label>" to go from one end to the other.
 ifeq ($(FORCE_ARM_DEBUGGING),true)
-  $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS += -fno-omit-frame-pointer -fno-strict-aliasing
+  $(combo_2nd_arch_prefix)TARGET_arm_CFLAGS += -fno-omit-frame-pointer
   $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS += -marm -fno-omit-frame-pointer
 endif
 
@@ -210,7 +208,6 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 $(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := \
 			-DNDEBUG \
 			-g \
-			-Wstrict-aliasing=2 \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \
 			-frename-registers
