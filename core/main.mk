@@ -267,10 +267,10 @@ include $(BUILD_SYSTEM)/definitions.mk
 # Bring in dex_preopt.mk
 include $(BUILD_SYSTEM)/dex_preopt.mk
 
-ifneq ($(filter user userdebug eng,$(MAKECMDGOALS)),)
+ifneq ($(filter user poweruser eng,$(MAKECMDGOALS)),)
 $(info ***************************************************************)
 $(info ***************************************************************)
-$(info Do not pass '$(filter user userdebug eng,$(MAKECMDGOALS))' on \
+$(info Do not pass '$(filter user poweruser eng,$(MAKECMDGOALS))' on \
        the make command line.)
 $(info Set TARGET_BUILD_VARIANT in buildspec.mk, or use lunch or)
 $(info choosecombo.)
@@ -318,21 +318,21 @@ ifdef TARGET_2ND_ARCH
 ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.isa.$(TARGET_2ND_ARCH).features=$($(TARGET_2ND_ARCH_VAR_PREFIX)DEX2OAT_TARGET_INSTRUCTION_SET_FEATURES)
 endif
 
-## user/userdebug ##
+## user/poweruser ##
 
-user_variant := $(filter user userdebug,$(TARGET_BUILD_VARIANT))
+user_variant := $(filter user poweruser,$(TARGET_BUILD_VARIANT))
 enable_target_debugging := true
 tags_to_install :=
 ifneq (,$(user_variant))
   # Target is secure in user builds.
   ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=1
 
-  ifeq ($(user_variant),userdebug)
+  ifeq ($(user_variant),poweruser)
     # Pick up some extra useful tools
-    tags_to_install += debug
+    tags_to_install +=
 
-    # Enable Dalvik lock contention logging for userdebug builds.
-    ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=500
+    # Disable Dalvik lock contention logging for poweruser builds.
+    #ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=500
   else
     # Disable debugging in plain user builds.
     enable_target_debugging :=
@@ -1063,9 +1063,9 @@ target-java-tests : java-target-tests
 target-native-tests : native-target-tests
 tests : host-tests target-tests
 
-# To catch more build breakage, check build tests modules in eng and userdebug builds.
+# To catch more build breakage, check build tests modules in eng and poweruser builds.
 ifneq ($(TARGET_BUILD_PDK),true)
-ifneq ($(filter eng userdebug,$(TARGET_BUILD_VARIANT)),)
+ifneq ($(filter eng poweruser,$(TARGET_BUILD_VARIANT)),)
 droidcore : target-tests host-tests
 endif
 endif
