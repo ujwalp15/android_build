@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-ifeq ($(STRICT_ALIASING2),true)
+ifeq ($(STRICT_ALIASING),true)
 
 LOCAL_DISABLE_STRICT := \
 	libc_bionic \

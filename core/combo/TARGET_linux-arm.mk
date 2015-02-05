@@ -43,14 +43,6 @@ else
 $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
-# Highly experimental, use with extreme caution.
-# -fgcse-las & -fpredictive-commoning = memory optimization flags, does not increase code size. gcse-las is not envoked by any -*O flags.
-# -fpredictive-commoning is enabled by default when using -O3. So if using -O3 there's no need to pass it twice.
-OPT_MEM := -fgcse-las
-ifneq ($(TARGET_USE_O3),true)
-OPT_MEM += -fpredictive-commoning
-endif
-
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_$(combo_2nd_arch_prefix)ARCH)/$(TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT))
@@ -75,59 +67,44 @@ $(combo_2nd_arch_prefix)TARGET_STRIP := $($(combo_2nd_arch_prefix)TARGET_TOOLS_P
 
 $(combo_2nd_arch_prefix)TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
-ifeq ($(TARGET_USE_O3),true)
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -O3 \
-                        -fomit-frame-pointer \
-                        -funswitch-loops
+ifeq ($(USE_O3_OPTIMIZATIONS),true)
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS := -O3 -DNDEBUG -pipe \
+                                             -fomit-frame-pointer \
+                                             -funswitch-loops \
+                                             -fno-tree-vectorize \
+                                             -fno-inline-functions \
+                                             -fivopts \
+                                             -ffunction-sections \
+                                             -fdata-sections \
+                                             -frename-registers \
+                                             -ftracer
+$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS := -mthumb -Os -DNDEBUG -pipe \
+                                               -fomit-frame-pointer \
+                                               -fno-tree-vectorize \
+                                               -fno-inline-functions \
+                                               -fno-unswitch-loops \
+                                               -fivopts \
+                                               -ffunction-sections \
+                                               -fdata-sections \
+                                               -ftracer \
+                                               -Wno-clobbered \
+                                               -Wno-strict-overflow
 else
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS :=    -O2 \
-                        -fomit-frame-pointer \
-                        -funswitch-loops
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS := -O2 -fomit-frame-pointer -funswitch-loops
+$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS := -mthumb -Os -fomit-frame-pointer
 endif
 
-ifeq ($(strip $(OPT_MEMORY)),true)
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS += $(OPT_MEM)
-endif
-
-ifeq ($(strip $(STRICT_ALIASING)),true)
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS +=    -fstrict-aliasing \
-                        -Wstrict-aliasing=3 \
-                        -Werror=strict-aliasing
-endif
-
-ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
-$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS +=    -Wno-unused-parameter \
-                        -Wno-unused-value \
-                        -Wno-unused-function
-endif
-
-# Modules can choose to compile some source as thumb.
-ifeq ($(TARGET_USE_O3),true)
-$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
-                        -O3 \
-                        -fomit-frame-pointer \
-                        -fno-tree-vectorize \
-                        -funsafe-math-optimizations
-else
-$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS :=  -mthumb \
-                        -Os \
-                        -fomit-frame-pointer
-endif
-
-ifeq ($(strip $(OPT_MEMORY)),true)
-$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS += $(OPT_MEM)
-endif
-
-ifeq ($(strip $(STRICT_ALIASING)),true)
-$(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS +=    -fstrict-aliasing \
-                          -Wstrict-aliasing=3 \
-                          -Werror=strict-aliasing
-endif
-
-ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
+ifeq ($(SUPPRES_UNUSED_WARNING),true)
+$(combo_2nd_arch_prefix)TARGET_arm_CFLAGS += -Wno-unused-parameter \
+                                             -Wno-unused-value \
+                                             -Wno-unused-function \
+                                             -Wno-unused-but-set-variable \
+                                             -Wno-maybe-uninitialized
 $(combo_2nd_arch_prefix)TARGET_thumb_CFLAGS += -Wno-unused-parameter \
-                       -Wno-unused-value \
-                       -Wno-unused-function
+                                               -Wno-unused-value \
+                                               -Wno-unused-function \
+                                               -Wno-unused-but-set-variable \
+                                               -Wno-maybe-uninitialized
 endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
@@ -147,6 +124,7 @@ endif
 android_config_h := $(call select-android-config-h,linux-arm)
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += \
+                        -pipe \
 			-msoft-float \
 			-ffunction-sections \
 			-fdata-sections \
@@ -171,16 +149,6 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
 endif
 
-ifeq ($(strip $(OPT_MEMORY)),true)
-$(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += $(OPT_MEM)
-endif
-
-ifeq ($(strip $(STRICT_ALIASING)),true)
-$(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += -fstrict-aliasing \
-                        -Wstrict-aliasing=3 \
-                        -Werror=strict-aliasing
-endif
-
 # This is to avoid the dreaded warning compiler message:
 #   note: the mangling of 'va_list' has changed in GCC 4.4
 #
@@ -202,23 +170,45 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_LDFLAGS += \
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += -mthumb-interwork
 
+ifeq ($(USE_O3_OPTIMIZATIONS),true)
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden \
+                                                  -O3 -DNDEBUG -pipe \
+                                                  -fivopts \
+                                                  -ffunction-sections \
+                                                  -fdata-sections \
+                                                  -funswitch-loops \
+                                                  -fomit-frame-pointer \
+                                                  -ftracer
+$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := -O3 -DNDEBUG -pipe -g \
+                                                 -frerun-cse-after-loop \
+                                                 -frename-registers \
+                                                 -fivopts \
+                                                 -ffunction-sections \
+                                                 -fdata-sections \
+                                                 -funswitch-loops \
+                                                 -fomit-frame-pointer \
+                                                 -ftracer
+else
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
+$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := -DNDEBUG -g -fgcse-after-reload -frerun-cse-after-loop -frename-registers
+endif
 
-# More flags/options can be added here
-$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := \
-			-DNDEBUG \
-			-g \
-			-fgcse-after-reload \
-			-frerun-cse-after-loop \
-			-frename-registers
+ifeq ($(SUPPRES_UNUSED_WARNING),true)
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -Wno-unused-parameter \
+                                                  -Wno-unused-value \
+                                                  -Wno-unused-function \
+                                                  -Wno-unused-but-set-variable \
+                                                  -Wno-maybe-uninitialized
+$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS += -Wno-unused-parameter \
+                                                 -Wno-unused-value \
+                                                 -Wno-unused-function \
+                                                 -Wno-unused-but-set-variable \
+                                                 -Wno-maybe-uninitialized
+endif
 
 libc_root := bionic/libc
 libm_root := bionic/libm
 libstdc++_root := bionic/libstdc++
-
-ifeq ($(strip $(OPT_MEMORY)),true)
-$(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS += $(OPT_MEM)
-endif
 
 ## on some hosts, the target cross-compiler is not available so do not run this command
 ifneq ($(wildcard $($(combo_2nd_arch_prefix)TARGET_CC)),)

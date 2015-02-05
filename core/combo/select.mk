@@ -49,33 +49,56 @@ $(combo_var_prefix)HAVE_STRLCPY := 0
 $(combo_var_prefix)HAVE_STRLCAT := 0
 $(combo_var_prefix)HAVE_KERNEL_MODULES := 0
 
-# Highly experimental, use with extreme caution.
-# -fgcse-las & -fpredictive-commoning = memory optimization flags, does not increase code size. gcse-las is not envoked by any -*O flags.
-# -fpredictive-commoning is enabled by default when using -O3. So if using -O3 there's no need to pass it twice.
-OPT_MEM := -fgcse-las
-ifneq ($(TARGET_USE_O3),true)
-OPT_MEM += -fpredictive-commoning
+ifeq ($(USE_O3_OPTIMIZATIONS),true)
+$(combo_var_prefix)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar \
+                                    -O3 -DNDEBUG -pipe \
+                                    -fivopts \
+                                    -ffunction-sections \
+                                    -fdata-sections \
+                                    -funswitch-loops \
+                                    -fomit-frame-pointer \
+                                    -ftracer
+$(combo_var_prefix)RELEASE_CFLAGS := -O3 -DNDEBUG -pipe \
+                                     -fivopts \
+                                     -ffunction-sections \
+                                     -fdata-sections \
+                                     -funswitch-loops \
+                                     -fomit-frame-pointer \
+                                     -ftracer
+$(combo_var_prefix)GLOBAL_CPPFLAGS := -O3 -DNDEBUG -pipe \
+                                      -fivopts \
+                                      -ffunction-sections \
+                                      -fdata-sections \
+                                      -funswitch-loops \
+                                      -fomit-frame-pointer \
+                                      -ftracer
+$(combo_var_prefix)GLOBAL_LDFLAGS := -Wl,-O1 -Wl,--as-needed -Wl,--relax -Wl,--sort-common -Wl,--gc-sections
+else
+ $(combo_var_prefix)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
+ $(combo_var_prefix)RELEASE_CFLAGS := -O2 -g
+ $(combo_var_prefix)GLOBAL_CPPFLAGS :=
+ $(combo_var_prefix)GLOBAL_LDFLAGS :=
 endif
 
-$(combo_var_prefix)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
-ifeq ($(TARGET_USE_03),true)
-$(combo_var_prefix)RELEASE_CFLAGS := -O3 -g
-$(combo_var_prefix)GLOBAL_CPPFLAGS :=
-$(combo_var_prefix)GLOBAL_LDFLAGS := -Wl,-O3
-else
-$(combo_var_prefix)RELEASE_CFLAGS := -O2 -g
-$(combo_var_prefix)GLOBAL_CPPFLAGS :=
-$(combo_var_prefix)GLOBAL_LDFLAGS :=
-endif
 $(combo_var_prefix)GLOBAL_ARFLAGS := crsPD
 $(combo_var_prefix)GLOBAL_LD_DIRS :=
 
-ifeq ($(strip $(OPT_MEMORY)),true)
-$(combo_var_prefix)RELEASE_CFLAGS += $(OPT_MEM)
-endif
-
-ifeq ($(strip $(STRICT_ALIASING)),true)
-$(combo_var_prefix)RELEASE_CFLAGS += -fstrict-aliasing -Wstrict-aliasing=3 -Werror=strict-aliasing
+ifeq ($(SUPPRES_UNUSED_WARNING),true)
+$(combo_var_prefix)GLOBAL_CFLAGS += -Wno-unused-parameter \
+                                    -Wno-unused-value \
+                                    -Wno-unused-function \
+                                    -Wno-unused-but-set-variable \
+                                    -Wno-maybe-uninitialized
+$(combo_var_prefix)RELEASE_CFLAGS += -Wno-unused-parameter \
+                                     -Wno-unused-value \
+                                     -Wno-unused-function \
+                                     -Wno-unused-but-set-variable \
+                                     -Wno-maybe-uninitialized
+$(combo_var_prefix)GLOBAL_CPPFLAGS += -Wno-unused-parameter \
+                                      -Wno-unused-value \
+                                      -Wno-unused-function \
+                                      -Wno-unused-but-set-variable \
+                                      -Wno-maybe-uninitialized
 endif
 
 $(combo_var_prefix)EXECUTABLE_SUFFIX :=
