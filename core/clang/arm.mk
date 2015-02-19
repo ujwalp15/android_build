@@ -34,7 +34,8 @@ CLANG_CONFIG_arm_UNKNOWN_CFLAGS := \
   -ftree-loop-distribute-patterns \
   -fvect-cost-model \
   -ftree-partial-pre \
-  -fipa-cp-clone
+  -fipa-cp-clone \
+  -mvectorize-with-neon-quad
 
 define subst-clang-incompatible-arm-flags
   $(subst -march=armv5te,-march=armv5t,\
