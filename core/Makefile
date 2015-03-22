@@ -859,7 +859,17 @@ ifdef is_tests_build
 #    $(tests_MODULES))
 endif
 
+ifneq ($(IS_RELEASED_BUILD),)
+build-changelog: $(INTERNAL_SYSTEMIMAGE_FILES)
+	@echo -e ${CL_YLW}"Generating Changelog"${CL_RST}
+	$(hide) vendor/slim/tools/changelog.sh $@
+
+.PHONY: build-changelog
+
+FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS) build-changelog
+else
 FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
+endif
 # -----------------------------------------------------------------
 # installed file list
 # Depending on anything that $(BUILT_SYSTEMIMAGE) depends on.
