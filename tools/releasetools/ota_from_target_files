@@ -582,25 +582,30 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   script.SetPermissionsRecursive("/tmp/install/bin", 0, 0, 0755, 0755, None, None)
 
   if OPTIONS.backuptool:
+    script.Print("Backup...")
     script.Mount("/system")
     script.RunBackup("backup")
     script.Unmount("/system")
 
   system_progress = 0.75
 
-  script.Print("                    _____________________ ")
-  script.Print("                   /     www.slimroms.eu |")
-  script.Print("                  /                      |")
-  script.Print("                 /    ___________________|")
-  script.Print("                /    /    ___             ")
-  script.Print("               /    / ___/   \            ")
-  script.Print("              /    / /   \___/____   ____ ")
-  script.Print("             /    /  |   |___/    \_/    |")
-  script.Print(" ___________/    /   |   |   |           |")
-  script.Print("|               /    |   |   |   |   |   |")
-  script.Print("|              /     |   |   |   |   |   |")
-  script.Print("|_____________/      \___^___^___^___^___/")
   script.Print(" ")
+  script.Print(" (               (                        ")
+  script.Print(" )\ ) (          )\ )         )           ")
+  script.Print("(()/( )\(     ) (()/(    ) ( /(    (  (   ")
+  script.Print(" /(_)|(_)\   (   /(_))( /( )\())  ))\ )(  ")
+  script.Print("(_))  _((_)  ) '(_))  )(_)|(_)\  /((_|()\ ")
+  script.Print("/ __|| |(_)_((_)/ __|((_)_| |(_)(_))  ((_)")
+  script.Print("\__ \| || | '   \__ \/ _' | '_ \/ -_)| '_|")
+  script.Print("|___/|_||_|_|_|_|___/\__,_|_.__/\___||_|  ")
+  script.Print(" ")
+
+  build = GetBuildProp("ro.build.date", OPTIONS.info_dict)
+  script.Print("Compiled: %s"%(build));
+
+  device = GetBuildProp("ro.product.device", OPTIONS.info_dict)
+  model = GetBuildProp("ro.product.model", OPTIONS.info_dict)
+  script.Print("Device: %s (%s)"%(model, device));
 
   if OPTIONS.wipe_user_data:
     system_progress -= 0.1
@@ -633,11 +638,14 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     system_diff = common.BlockDifference("system", system_tgt, src=None)
     system_diff.WriteScript(script, output_zip)
   else:
+    script.Print("Formatting system partition...")
     script.FormatPartition("/system")
     script.Mount("/system", recovery_mount_options)
     if not has_recovery_patch:
       script.UnpackPackageDir("recovery", "/system")
+    script.Print("Installing ROM, please wait...")
     script.UnpackPackageDir("system", "/system")
+    script.Print("Symlinks and permissions...")
     symlinks = CopyPartitionFiles(system_items, input_zip, output_zip)
     script.MakeSymlinks(symlinks)
 
@@ -682,6 +690,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
 
   if OPTIONS.backuptool:
     script.ShowProgress(0.02, 10)
+    script.Print("Restoring...")
     if block_based:
       script.Mount("/system")
     script.RunBackup("restore")
@@ -689,6 +698,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
       script.Unmount("/system")
 
   script.ShowProgress(0.05, 5)
+  script.Print("Flashing Boot Image...")
   script.WriteRawImage("/boot", "boot.img")
 
   script.ShowProgress(0.2, 10)
