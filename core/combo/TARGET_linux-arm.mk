@@ -82,12 +82,10 @@ TARGET_arm_CFLAGS :=    -O3 \
                         -fno-inline-functions \
                         -fomit-frame-pointer
 else
-TARGET_arm_CFLAGS :=    -Os \
+TARGET_arm_CFLAGS :=    -O2 \
                         -fomit-frame-pointer \
-                        -fno-zero-initialized-in-bss \
-                        -funswitch-loops \
-                        -fno-tree-vectorize \
-                        -funsafe-loop-optimizations
+                        -fstrict-aliasing \
+                        -funswitch-loops
 endif
 
 ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
@@ -117,7 +115,8 @@ ifeq ($(TARGET_USE_O3),true)
 else
     TARGET_thumb_CFLAGS :=  -mthumb \
                             -Os \
-                            -fomit-frame-pointer
+                            -fomit-frame-pointer \
+                            -fno-strict-aliasing
 endif
 
 ifeq ($(strip $(SUPPRES_UNUSED_WARNING)),true)
